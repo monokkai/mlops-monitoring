@@ -7,6 +7,6 @@ export class AppController {
 
   @Get("/health")
   getHealth(): string {
-    return "Health"
+    return "Service https://localhost:80 is healthy";
   }
 }
