@@ -5,4 +5,5 @@ include:
 
 networks:
   auth-network:
+    name: auth-network
     driver: bridge

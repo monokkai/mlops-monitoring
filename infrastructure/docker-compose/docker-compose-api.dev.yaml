@@ -4,11 +4,11 @@ services:
   api-gateway:
     container_name: api-gateway
     build:
-      context: ..
+      context: ../../src/api-gateway
       dockerfile: ../../src/api-gateway/Dockerfile
     ports:
       - "80:80"
     env_file:
-      - ../../src/api-gateway/.env
+        - "../../src/api-gateway/.env"
     networks:
       - auth-network
