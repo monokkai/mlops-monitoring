@@ -1,0 +1,8 @@
+version: "3.9"
+
+include:
+  - ./docker-compose/docker-compose-api.dev.yaml
+
+networks:
+  auth-network:
+    driver: bridge
