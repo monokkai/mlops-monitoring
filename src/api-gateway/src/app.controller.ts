@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Headers } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Headers, Query, Post, Put, Delete, Patch } from '@nestjs/common';
 import { AppService } from './app.service';
 import { IHealthCheckResponse, IProxyError } from './interfaces/IServiceConfig';
 import { Request, Response } from 'express';
@@ -90,4 +90,181 @@ export class AppController {
       return this.errorsHandler(error, res);
     }
   }
+
+  @Get('proxy/:service/*')
+  async proxyGet(
+    @Param('service') service: string,
+    @Req() req: Request,
+    @Query() query: any,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      const path = this.extractPath(req.originalUrl, service);
+      const queryString = new URLSearchParams(query).toString();
+      const fullPath = queryString ? `${path}?${queryString}` : path;
+      const { host, connection, ...proxyHeaders } = headers;
+
+      const data = await this.appService.proxyRequest(
+        service,
+        fullPath,
+        'GET',
+        undefined,
+        proxyHeaders,
+      );
+
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error: any) {
+      return this.errorsHandler(error, res);
+    }
+  }
+
+  @Post('proxy/:service/*')
+  async proxyPost(
+    @Param('service') service: string,
+    @Req() req: Request,
+    @Body() body: any,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      const path = this.extractPath(req.originalUrl, service);
+      const { host, connection, ...proxyHeaders } = headers;
+
+      const data = await this.appService.proxyRequest(
+        service,
+        path,
+        'POST',
+        body,
+        proxyHeaders,
+      );
+
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error: any) {
+      return this.errorsHandler(error, res);
+    }
+  }
+
+  @Put('proxy/:service/*')
+  async proxyPut(
+    @Param('service') service: string,
+    @Req() req: Request,
+    @Body() body: any,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      const path = this.extractPath(req.originalUrl, service);
+      const { host, connection, ...proxyHeaders } = headers;
+
+      const data = await this.appService.proxyRequest(
+        service,
+        path,
+        'PUT',
+        body,
+        proxyHeaders,
+      );
+
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error: any) {
+      return this.errorsHandler(error, res);
+    }
+  }
+
+  @Delete("proxy/:service/*")
+  async proxyDelete(
+    @Param('service') service: string,
+    @Req() req: Request,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      const path = this.extractPath(req.originalUrl, service);
+      const { host, connection, ...proxyHeaders } = headers;
+
+      const data = await this.appService.proxyRequest(
+        service,
+        path,
+        'DELETE',
+        undefined,
+        proxyHeaders,
+      );
+
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error: any) {
+      return this.errorsHandler(error, res);
+    }
+  }
+
+  @Patch('proxy/:service/*')
+  async proxyPatch(
+    @Param('service') service: string,
+    @Req() req: Request,
+    @Body() body: any,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      const path = this.extractPath(req.originalUrl, service);
+      const { host, connection, ...proxyHeaders } = headers;
+
+      const data = await this.appService.proxyRequest(
+        service,
+        path,
+        'PATCH',
+        body,
+        proxyHeaders,
+      );
+
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error: any) {
+      return this.errorsHandler(error, res);
+    }
+  }
+
+  @Get("auth/*")
+  async authGet(
+    @Req() req: Request,
+    @Query() query: any,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    return this.authGet(req, query, headers, res);
+  }
+
+  @Get("ml/*")
+  async mlGet(
+    @Req() req: Request,
+    @Query() query: any,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    return this.mlGet(req, query, headers, res);
+  }
+
+  @Get("app/*")
+  async appGet(
+    @Req() req: Request,
+    @Query() query: any,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    return this.appGet(req, query, headers, res);
+  }
+
+  // TODO: Implement service-specific health check endpoints if needed
+  // @Get('services/:service/health')
+  // async serviceHealth(
+  //   @Param('service') service: string,
+  //   @Res() res: Response,
+  // ): Promise<Response> {
+  //   const isHealthy = await this.appService.healthCheck(service);
+
+  //   return res.status(isHealthy ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE)
+  //     .json({
+  //       service,
+  //       status: isHealthy ? 'healthy' : 'unhealthy',
+  //       timestamp: new Date().toISOString(),
+  //     });
+  // }
 }
