@@ -18,6 +18,10 @@ export class AppService {
 
   constructor(private readonly HttpService: HttpService) { }
 
+  getServices(): IServiceConfig {
+    return this.services;
+  }
+
   async proxyRequest(
     service: string,
     path: string,
