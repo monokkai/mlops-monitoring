@@ -1,6 +1,8 @@
 package main
 
 import (
+	"auth-service/internal/handler"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,5 +12,5 @@ func main() {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	r.GET("/ping", Pong)
+	r.GET("/ping", handler.Pong)
 }
