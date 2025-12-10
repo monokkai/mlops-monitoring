@@ -2,6 +2,7 @@ version: "3.9"
 
 include:
   - ./docker-compose/docker-compose-api.dev.yaml
+  - ./docker-compose/docker-compose-auth.dev.yaml
 
 networks:
   auth-network:

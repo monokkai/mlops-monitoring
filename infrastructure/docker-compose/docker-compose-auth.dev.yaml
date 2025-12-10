@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  auth-service:
+    container_name: auth-service
+    build:
+      context: ../../src/auth-service
+      dockerfile: ../../src/auth-service/Dockerfile
+    env_file:
+      - ../../src/auth-service/.env
+    environment:
+      - PORT=${PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_NAME=${DB_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - auth-db
+    networks:
+      - auth-network
+
+  auth-db:
+    container_name: auth-db
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    # ports:
+    #   - "3306:3306"
+    volumes:
+      - ../../mysql/init:/docker-entrypoint-initdb.d
+      - ../../mysql/conf.d:/etc/mysql/conf.d
+      - auth_db_data:/var/lib/mysql
+    tmpfs:
+      - /tmp:size=1G
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - auth-network
+
+volumes:
+  auth_db_data:
+    name: auth_db_data

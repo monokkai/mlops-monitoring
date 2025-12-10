@@ -37,10 +37,10 @@ func Load() *Config {
 
 	cfg.Server.Port = getEnv("PORT", "3000")
 	cfg.DB.Host = getEnv("DB_HOST", "localhost")
-	cfg.DB.Port = getEnv("DB_PORT", "5432")
-	cfg.DB.User = getEnv("DB_USER", "monokkai")
-	cfg.DB.Name = getEnv("DB_NAME", "auth_db")
-	cfg.DB.Password = getEnv("DB_PASSWORD", "authpassword")
+	cfg.DB.Port = getEnv("DB_PORT", "3306")
+	cfg.DB.User = getEnv("DB_USER", "root")
+	cfg.DB.Name = getEnv("DB_NAME", "authdb")
+	cfg.DB.Password = getEnv("DB_PASSWORD", "root")
 	cfg.JWT.Secret = getEnv("JWT_SECRET", "y7Wk+98QE1tWGl0BAi0tkqegTNcizbeew6eGDcjOmDU=")
 
 	return cfg
