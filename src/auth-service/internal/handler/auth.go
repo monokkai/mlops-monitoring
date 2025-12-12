@@ -232,3 +232,102 @@ func Register(c *gin.Context) {
 		"user":    res,
 	})
 }
+
+func Login(c *gin.Context) {
+	var req cmd.UserLoginRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	user, err := FindUserById(req.ID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Database error",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	if user == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid credentials",
+		})
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid credentials",
+		})
+		return
+	}
+
+	res := cmd.UserResponse{
+		ID:        user.ID,
+		UUID:      user.UUID,
+		Username:  user.Username,
+		Email:     user.Email,
+		FirstName: user.FirstName.String,
+		LastName:  user.LastName.String,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+	}
+
+	token := "jwt-token-will-be-here"
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Login successful",
+		"user":    res,
+		"token":   token,
+	})
+}
+
+func Profile(c *gin.Context) {
+	userID := int64(1)
+	user := &cmd.User{}
+	query := `SELECT id, uuid, username, email, password_hash, first_name, last_name, is_active, is_verified, role, created_at, updated_at FROM users WHERE id = ?`
+
+	err := db.QueryRow(query, userID).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.FirstName,
+		&user.LastName,
+		&user.Role,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":   "User not found",
+				"details": userID,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Database error",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	res := cmd.UserResponse{
+		ID:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		FirstName: user.FirstName.String,
+		LastName:  user.LastName.String,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"user": res,
+	})
+}
