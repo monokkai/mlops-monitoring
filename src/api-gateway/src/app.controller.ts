@@ -222,14 +222,92 @@ export class AppController {
     }
   }
 
-  @Get("auth/*")
-  async authGet(
-    @Req() req: Request,
-    @Query() query: any,
+  @Post("auth/register")
+  async authRegister(
+    @Body() body: any,
     @Headers() headers: Record<string, string>,
     @Res() res: Response,
   ): Promise<Response> {
-    return this.authGet(req, query, headers, res);
+    try {
+      const { host, connection, ...proxyHeaders } = headers;
+
+      const data = await this.appService.proxyRequest(
+        "auth",
+        "/register",
+        "POST",
+        body,
+        proxyHeaders
+      )
+
+
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error: any) {
+      return this.errorsHandler(error, res);
+    }
+  }
+
+  @Post("auth/login")
+  async authLogin(
+    @Body() body: any,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      const { host, connection, ...proxyHeaders } = headers;
+
+      const data = await this.appService.proxyRequest(
+        "auth",
+        "/login",
+        "POST",
+        body,
+        proxyHeaders
+      )
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error: any) {
+      return this.errorsHandler(error, res);
+    }
+  }
+
+  @Get("auth/profile")
+  async authProfile(
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      const { host, connection, ...proxyHeaders } = headers;
+
+      const data = await this.appService.proxyRequest(
+        "auth",
+        "/profile",
+        "GET",
+        undefined,
+        proxyHeaders
+      )
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error: any) {
+      return this.errorsHandler(error, res);
+    }
+  }
+
+  @Get("auth/check")
+  async authCheck(
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ): Promise<Response> {
+    try {
+      const { host, connection, ...proxyHeaders } = headers;
+
+      const data = await this.appService.proxyRequest(
+        "auth",
+        "/check",
+        "GET",
+        undefined,
+        proxyHeaders
+      )
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error: any) {
+      return this.errorsHandler(error, res);
+    }
   }
 
   @Get("ml/*")
