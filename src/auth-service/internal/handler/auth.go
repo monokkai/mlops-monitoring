@@ -41,7 +41,7 @@ func CreateUser(user *cmd.User) error {
 	return err
 }
 
-func GetUserByEmail(email string) (*cmd.User, error) {
+func FindUserByEmail(email string) (*cmd.User, error) {
 	query := `SELECT id, uuid, username, email, password_hash, first_name, last_name, is_active, is_verified, role, created_at, updated_at FROM users WHERE email = ?`
 
 	user := &cmd.User{}
