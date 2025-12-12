@@ -35,6 +35,7 @@ type UserCreateRequest struct {
 }
 
 type UserLoginRequest struct {
+	ID       int64  `json:"id,omitempty"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }

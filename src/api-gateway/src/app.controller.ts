@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Headers, Query, Post, Put, Delete, Patch } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Headers, Query, Post, Put, Delete, Patch, All } from '@nestjs/common';
 import { AppService } from './app.service';
 import { IHealthCheckResponse, IProxyError } from './interfaces/IServiceConfig';
 import { Request, Response } from 'express';
@@ -9,9 +9,17 @@ export class AppController {
   constructor(private readonly appService: AppService) { }
 
   private extractPath(originalUrl: string, service: string): string {
-    const prefix = `api/${service}`;
+    let prefix = '';
 
-    if (originalUrl.startsWith(prefix)) {
+    if (originalUrl.startsWith(`proxy/${service}`)) {
+      prefix = `proxy/${service}`;
+    } else if (originalUrl.startsWith(`auth/`)) {
+      return originalUrl.replace(`auth/`, '');
+    } else if (originalUrl.startsWith(`api/${service}`)) {
+      prefix = `api/${service}`;
+    }
+
+    if (prefix) {
       return originalUrl.slice(prefix.length) || '/';
     }
     return originalUrl;
@@ -65,62 +73,8 @@ export class AppController {
     });
   }
 
-  @Get("proxy/:service/*")
-  async proxyPath(
-    @Param("service") service: string,
-    @Req() req: Request,
-    @Body() body: any,
-    @Headers() headers: Record<string, string>,
-    @Res() res: Response
-  ): Promise<Response> {
-    try {
-      const path = this.extractPath(req.originalUrl, service);
-      const { host, connection, ...proxyHeaders } = headers;
-
-      const data = await this.appService.proxyRequest(
-        service,
-        path,
-        req.method = "PATCH",
-        body,
-        proxyHeaders
-      )
-
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error: any) {
-      return this.errorsHandler(error, res);
-    }
-  }
-
-  @Get('proxy/:service/*')
-  async proxyGet(
-    @Param('service') service: string,
-    @Req() req: Request,
-    @Query() query: any,
-    @Headers() headers: Record<string, string>,
-    @Res() res: Response,
-  ): Promise<Response> {
-    try {
-      const path = this.extractPath(req.originalUrl, service);
-      const queryString = new URLSearchParams(query).toString();
-      const fullPath = queryString ? `${path}?${queryString}` : path;
-      const { host, connection, ...proxyHeaders } = headers;
-
-      const data = await this.appService.proxyRequest(
-        service,
-        fullPath,
-        'GET',
-        undefined,
-        proxyHeaders,
-      );
-
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error: any) {
-      return this.errorsHandler(error, res);
-    }
-  }
-
-  @Post('proxy/:service/*')
-  async proxyPost(
+  @All('proxy/:service/*')
+  async proxyAll(
     @Param('service') service: string,
     @Req() req: Request,
     @Body() body: any,
@@ -129,89 +83,13 @@ export class AppController {
   ): Promise<Response> {
     try {
       const path = this.extractPath(req.originalUrl, service);
+      const method = req.method as any;
       const { host, connection, ...proxyHeaders } = headers;
 
       const data = await this.appService.proxyRequest(
         service,
         path,
-        'POST',
-        body,
-        proxyHeaders,
-      );
-
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error: any) {
-      return this.errorsHandler(error, res);
-    }
-  }
-
-  @Put('proxy/:service/*')
-  async proxyPut(
-    @Param('service') service: string,
-    @Req() req: Request,
-    @Body() body: any,
-    @Headers() headers: Record<string, string>,
-    @Res() res: Response,
-  ): Promise<Response> {
-    try {
-      const path = this.extractPath(req.originalUrl, service);
-      const { host, connection, ...proxyHeaders } = headers;
-
-      const data = await this.appService.proxyRequest(
-        service,
-        path,
-        'PUT',
-        body,
-        proxyHeaders,
-      );
-
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error: any) {
-      return this.errorsHandler(error, res);
-    }
-  }
-
-  @Delete("proxy/:service/*")
-  async proxyDelete(
-    @Param('service') service: string,
-    @Req() req: Request,
-    @Headers() headers: Record<string, string>,
-    @Res() res: Response,
-  ): Promise<Response> {
-    try {
-      const path = this.extractPath(req.originalUrl, service);
-      const { host, connection, ...proxyHeaders } = headers;
-
-      const data = await this.appService.proxyRequest(
-        service,
-        path,
-        'DELETE',
-        undefined,
-        proxyHeaders,
-      );
-
-      return res.status(HttpStatus.OK).json(data);
-    } catch (error: any) {
-      return this.errorsHandler(error, res);
-    }
-  }
-
-  @Patch('proxy/:service/*')
-  async proxyPatch(
-    @Param('service') service: string,
-    @Req() req: Request,
-    @Body() body: any,
-    @Headers() headers: Record<string, string>,
-    @Res() res: Response,
-  ): Promise<Response> {
-    try {
-      const path = this.extractPath(req.originalUrl, service);
-      const { host, connection, ...proxyHeaders } = headers;
-
-      const data = await this.appService.proxyRequest(
-        service,
-        path,
-        'PATCH',
+        method,
         body,
         proxyHeaders,
       );

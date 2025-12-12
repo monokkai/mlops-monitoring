@@ -18,8 +18,6 @@ async function bootstrap() {
     allowedHeaders: ["Content-Type", "Authorization"],
   }
   );
-  app.setGlobalPrefix('api');
-
 
   await app.listen(process.env.PORT ?? 80);
   console.log(`🚀 API Gateway is running at http://localhost:${process.env.PORT}`);
